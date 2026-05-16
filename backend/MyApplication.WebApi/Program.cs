@@ -1,5 +1,6 @@
 
 using Microsoft.OpenApi;
+using MyApplication.Infrastructure.Extensions;
 
 namespace MyApplication.WebApi;
 
@@ -14,6 +15,8 @@ public class Program
         builder.Services.AddControllers();
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddEndpointsApiExplorer();
+
+        builder.Services.AddEfCore(builder.Configuration);
 
         builder.Services.AddSwaggerGen(options =>
         {

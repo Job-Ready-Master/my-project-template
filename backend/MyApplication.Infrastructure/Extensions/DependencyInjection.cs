@@ -1,13 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using MyApplication.Infrastructure.Persistents;
+using MyApplication.Infrastructure.Persistence;
 
 namespace MyApplication.Infrastructure.Extensions;
 
 public static class DependencyInjection
 {
-    public static IServiceCollection AddInfrastructure(
+    public static IServiceCollection AddEfCore(
         this IServiceCollection services,
         IConfiguration configuration
     )
@@ -17,10 +17,6 @@ public static class DependencyInjection
 
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionString)
-        );
-
-        services.AddScoped<ApplicationDbContext>(
-            provider => provider.GetRequiredService<ApplicationDbContext>()
         );
 
         return services;
