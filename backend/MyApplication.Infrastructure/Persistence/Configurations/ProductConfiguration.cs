@@ -24,6 +24,6 @@ internal sealed class ProductConfiguration : BaseEntityConfiguration<Product>
         builder.HasOne(p => p.Category)
             .WithMany()
             .HasForeignKey(p => p.CategoryId)
-            .OnDelete(DeleteBehavior.Restrict);
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

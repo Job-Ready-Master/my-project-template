@@ -81,7 +81,7 @@ namespace MyApplication.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyApplication.Domain.Product", b =>
@@ -89,7 +89,7 @@ namespace MyApplication.Infrastructure.Migrations
                     b.HasOne("MyApplication.Domain.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Category");

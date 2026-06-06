@@ -10,6 +10,7 @@ public sealed class Product : BaseEntity
 
     public int CategoryId { get; private set; }
 
+    // Reference navigation property
     public Category Category { get; private set; } = null!;
 
     protected Product() { }

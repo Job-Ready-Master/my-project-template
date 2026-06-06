@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace MyApplication.Infrastructure.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260606074706_Product_Entity")]
+    [Migration("20260606085452_Product_Entity")]
     partial class Product_Entity
     {
         /// <inheritdoc />
@@ -84,7 +84,7 @@ namespace MyApplication.Infrastructure.Migrations
 
                     b.HasIndex("CategoryId");
 
-                    b.ToTable("Product");
+                    b.ToTable("Products");
                 });
 
             modelBuilder.Entity("MyApplication.Domain.Product", b =>
@@ -92,7 +92,7 @@ namespace MyApplication.Infrastructure.Migrations
                     b.HasOne("MyApplication.Domain.Category", "Category")
                         .WithMany()
                         .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
                     b.Navigation("Category");
