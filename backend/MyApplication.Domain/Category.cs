@@ -1,9 +1,9 @@
-﻿namespace MyApplication.Domain;
+﻿using MyApplication.Domain.Common;
 
-public sealed class Category
+namespace MyApplication.Domain;
+
+public sealed class Category : AuditableEntity
 {
-    public int Id { get; set; }
-
     public string Name { get; private set; } = null!;
 
     public string Slug { get; private set; } = null!;
