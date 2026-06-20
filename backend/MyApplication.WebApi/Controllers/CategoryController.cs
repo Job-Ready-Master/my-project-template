@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyApplication.Application.Features.Category.DTO;
-using MyApplication.Domain;
-using MyApplication.Infrastructure.Persistence;
+using MyApplication.Application.Features.CategoryFeature.DTO;
+using MyApplication.Application.Features.CategoryFeature.Services;
 
 namespace MyApplication.WebApi.Controllers;
 
@@ -10,27 +8,18 @@ namespace MyApplication.WebApi.Controllers;
 [ApiController]
 public sealed class CategoryController : ControllerBase
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly ICategoryService _categoryService;
 
-    public CategoryController(ApplicationDbContext dbContext)
+    public CategoryController(ICategoryService categoryService)
     {
-        _dbContext = dbContext;
+        _categoryService = categoryService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<CategoryResponse>>> GetAll(
         CancellationToken cancellationToken)
     {
-        var categories = await _dbContext.Categories
-            .AsNoTracking()
-            .Select(c => new CategoryResponse
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Slug = c.Slug,
-                CreatedAt = c.CreatedAt
-            })
-            .ToListAsync(cancellationToken);
+        var categories = await _categoryService.GetAllAsync(cancellationToken);
 
         return Ok(categories);
     }
@@ -40,17 +29,9 @@ public sealed class CategoryController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
-        var category = await _dbContext.Categories
-            .AsNoTracking()
-            .Where(c => c.Id == id)
-            .Select(c => new CategoryResponse
-            {
-                Id = c.Id,
-                Name = c.Name,
-                Slug = c.Slug,
-                CreatedAt = c.CreatedAt
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        var category = await _categoryService.GetByIdAsync(
+            id,
+            cancellationToken);
 
         if (category is null)
         {
@@ -61,29 +42,18 @@ public sealed class CategoryController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult<CategoryResponse>> Create(CreateCategoryRequest request, CancellationToken cancellationToken)
+    public async Task<ActionResult<CategoryResponse>> Create(
+        CreateCategoryRequest request,
+        CancellationToken cancellationToken)
     {
-        // Mapping the request to the domain entity
-        var category = new Category(
-            request.Name,
-            request.Slug);
-
-        _dbContext.Categories.Add(category);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        var response = new CategoryResponse
-        {
-            Id = category.Id,
-            Name = category.Name,
-            Slug = category.Slug,
-            CreatedAt = category.CreatedAt
-        };
+        var category = await _categoryService.CreateAsync(
+            request,
+            cancellationToken);
 
         return CreatedAtAction(
             nameof(GetById),
             new { id = category.Id },
-            response);
+            category);
     }
 
     [HttpDelete("{id:int}")]
@@ -91,17 +61,14 @@ public sealed class CategoryController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
-        var category = await _dbContext.Categories
-            .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
+        var deleted = await _categoryService.DeleteAsync(
+            id,
+            cancellationToken);
 
-        if (category is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _dbContext.Categories.Remove(category);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return NoContent();
     }

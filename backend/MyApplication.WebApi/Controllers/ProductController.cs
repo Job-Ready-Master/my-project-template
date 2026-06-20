@@ -1,8 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using MyApplication.Application.Features.Product.DTO;
-using MyApplication.Domain;
-using MyApplication.Infrastructure.Persistence;
+using MyApplication.Application.Features.ProductFeature.DTO;
+using MyApplication.Application.Features.ProductFeature.Services;
 
 namespace MyApplication.WebApi.Controllers;
 
@@ -10,29 +8,18 @@ namespace MyApplication.WebApi.Controllers;
 [ApiController]
 public sealed class ProductController : ControllerBase
 {
-    private readonly ApplicationDbContext _dbContext;
+    private readonly IProductService _productService;
 
-    public ProductController(ApplicationDbContext dbContext)
+    public ProductController(IProductService productService)
     {
-        _dbContext = dbContext;
+        _productService = productService;
     }
 
     [HttpGet]
     public async Task<ActionResult<IEnumerable<ProductResponse>>> GetAll(
         CancellationToken cancellationToken)
     {
-        var products = await _dbContext.Products
-            .AsNoTracking()
-            .Include(p => p.Category)
-            .Select(p => new ProductResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name
-            })
-            .ToListAsync(cancellationToken);
+        var products = await _productService.GetAllAsync(cancellationToken);
 
         return Ok(products);
     }
@@ -42,19 +29,7 @@ public sealed class ProductController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
-        var product = await _dbContext.Products
-            .AsNoTracking()
-            .Include(p => p.Category)
-            .Where(p => p.Id == id)
-            .Select(p => new ProductResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                Price = p.Price,
-                CategoryId = p.CategoryId,
-                CategoryName = p.Category.Name
-            })
-            .FirstOrDefaultAsync(cancellationToken);
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
 
         if (product is null)
         {
@@ -69,35 +44,19 @@ public sealed class ProductController : ControllerBase
         CreateProductRequest request,
         CancellationToken cancellationToken)
     {
-        var categoryExists = await _dbContext.Categories
-            .AnyAsync(c => c.Id == request.CategoryId, cancellationToken);
+        var product = await _productService.CreateAsync(
+            request,
+            cancellationToken);
 
-        if (!categoryExists)
+        if (product is null)
         {
             return BadRequest($"Category {request.CategoryId} does not exist.");
         }
 
-        var product = new Product(
-            request.Name,
-            request.Price,
-            request.CategoryId);
-
-        _dbContext.Products.Add(product);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
-
-        var response = new ProductResponse
-        {
-            Id = product.Id,
-            Name = product.Name,
-            Price = product.Price,
-            CategoryId = product.CategoryId
-        };
-
         return CreatedAtAction(
             nameof(GetById),
             new { id = product.Id },
-            response);
+            product);
     }
 
     [HttpDelete("{id:int}")]
@@ -105,17 +64,14 @@ public sealed class ProductController : ControllerBase
         int id,
         CancellationToken cancellationToken)
     {
-        var product = await _dbContext.Products
-            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+        var deleted = await _productService.DeleteAsync(
+            id,
+            cancellationToken);
 
-        if (product is null)
+        if (!deleted)
         {
             return NotFound();
         }
-
-        _dbContext.Products.Remove(product);
-
-        await _dbContext.SaveChangesAsync(cancellationToken);
 
         return NoContent();
     }

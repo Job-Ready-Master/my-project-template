@@ -1,4 +1,4 @@
-﻿namespace MyApplication.Application.Features.Category.DTO;
+﻿namespace MyApplication.Application.Features.CategoryFeature.DTO;
 
 public sealed class CategoryResponse
 {

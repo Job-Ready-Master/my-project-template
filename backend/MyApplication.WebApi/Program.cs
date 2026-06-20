@@ -1,5 +1,7 @@
 
 using Microsoft.OpenApi;
+using MyApplication.Application.Features.CategoryFeature.Services;
+using MyApplication.Application.Features.ProductFeature.Services;
 using MyApplication.Infrastructure.Extensions;
 
 namespace MyApplication.WebApi;
@@ -28,6 +30,8 @@ public class Program
             });
         });
 
+        builder.Services.AddScoped<IProductService, ProductService>();
+        builder.Services.AddScoped<ICategoryService, CategoryService>();
 
         var app = builder.Build();
 

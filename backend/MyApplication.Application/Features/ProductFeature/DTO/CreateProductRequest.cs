@@ -1,4 +1,4 @@
-﻿namespace MyApplication.Application.Features.Product.DTO;
+﻿namespace MyApplication.Application.Features.ProductFeature.DTO;
 
 public sealed class CreateProductRequest
 {
